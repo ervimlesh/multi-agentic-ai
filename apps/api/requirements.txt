@@ -3,10 +3,12 @@ uvicorn[standard]>=0.27
 sqlalchemy>=2.0
 aiosqlite>=0.19
 asyncpg>=0.29
+aiomysql>=0.2.0
+cryptography>=42.0
 pydantic[email]>=2.6
 pydantic-settings>=2.2
-bcrypt>=4.1
 pyjwt>=2.8
+aiosmtplib>=3.0
 python-multipart>=0.0.9
 
 # --- dev / test ---

@@ -1,4 +1,4 @@
-"""VIEW layer — Pydantic request/response schemas (serialization)."""
+"""VIEW layer — Pydantic request/response schemas (passwordless OTP)."""
 from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
@@ -7,13 +7,20 @@ from pydantic import BaseModel, ConfigDict, EmailStr, Field
 # ---------- Requests ----------
 class RegisterRequest(BaseModel):
     email: EmailStr
-    password: str = Field(min_length=8, max_length=128)
     full_name: str = Field(min_length=1, max_length=255)
 
 
 class LoginRequest(BaseModel):
     email: EmailStr
-    password: str = Field(min_length=1, max_length=128)
+
+
+class VerifyRequest(BaseModel):
+    email: EmailStr
+    code: str = Field(min_length=4, max_length=10)
+
+
+class ResendRequest(BaseModel):
+    email: EmailStr
 
 
 class RefreshRequest(BaseModel):
@@ -21,6 +28,12 @@ class RefreshRequest(BaseModel):
 
 
 # ---------- Responses ----------
+class OtpSentResponse(BaseModel):
+    message: str
+    email: EmailStr
+    expires_in: int  # seconds until the code expires
+
+
 class TokenResponse(BaseModel):
     access_token: str
     refresh_token: str

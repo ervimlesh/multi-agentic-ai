@@ -4,7 +4,7 @@ from datetime import datetime
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.modules.auth.models import RefreshToken, User
+from app.modules.auth.models import OtpCode, RefreshToken, User
 
 
 class AuthRepository:
@@ -20,15 +20,42 @@ class AuthRepository:
         result = await self.session.execute(select(User).where(User.id == user_id))
         return result.scalar_one_or_none()
 
-    async def create_user(
-        self, email: str, full_name: str, hashed_password: str
-    ) -> User:
-        user = User(
-            email=email, full_name=full_name, hashed_password=hashed_password
-        )
+    async def create_user(self, email: str, full_name: str) -> User:
+        user = User(email=email, full_name=full_name)
         self.session.add(user)
         await self.session.flush()
         return user
+
+    # ---- OTP codes ----
+    async def create_otp(
+        self, email: str, code_hash: str, purpose: str, expires_at: datetime
+    ) -> OtpCode:
+        otp = OtpCode(
+            email=email,
+            code_hash=code_hash,
+            purpose=purpose,
+            expires_at=expires_at,
+        )
+        self.session.add(otp)
+        await self.session.flush()
+        return otp
+
+    async def get_latest_active_otp(self, email: str) -> OtpCode | None:
+        result = await self.session.execute(
+            select(OtpCode)
+            .where(OtpCode.email == email, OtpCode.consumed.is_(False))
+            .order_by(OtpCode.created_at.desc())
+        )
+        return result.scalars().first()
+
+    async def invalidate_otps(self, email: str) -> None:
+        """Consume any outstanding codes for an email before issuing a new one."""
+        await self.session.execute(
+            update(OtpCode)
+            .where(OtpCode.email == email, OtpCode.consumed.is_(False))
+            .values(consumed=True)
+        )
+        await self.session.flush()
 
     # ---- Refresh tokens ----
     async def store_refresh_token(

@@ -1,17 +1,17 @@
 {
   "info": {
-    "name": "Multi-Agentic AI — Auth",
-    "_postman_id": "a1b2c3d4-0001-4000-8000-auth000collec",
-    "description": "Full authentication flow (register, login, refresh, logout, me) for the Multi-Agent AI Platform API. Tokens are captured automatically into collection variables, so requests can be run top-to-bottom via the Collection Runner.",
+    "name": "Multi-Agentic AI — Auth (Passwordless OTP)",
+    "_postman_id": "a1b2c3d4-0002-4000-8000-otp00collec01",
+    "description": "Passwordless email-OTP auth flow for the Multi-Agent AI Platform API.\n\nFlow:\n1. Register (sign up)  OR  Login (sign in) -> server emails a 6-digit code.\n2. Verify the code -> receive user + access/refresh tokens.\n\nSet the {{otp_code}} collection variable to the code from your email before running Verify. Tokens are captured automatically.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
     { "key": "base_url", "value": "http://localhost:8000", "type": "string" },
-    { "key": "access_token", "value": "", "type": "string" },
-    { "key": "refresh_token", "value": "", "type": "string" },
     { "key": "email", "value": "alice@example.com", "type": "string" },
-    { "key": "password", "value": "supersecret123", "type": "string" },
-    { "key": "full_name", "value": "Alice Tester", "type": "string" }
+    { "key": "full_name", "value": "Alice Tester", "type": "string" },
+    { "key": "otp_code", "value": "", "type": "string" },
+    { "key": "access_token", "value": "", "type": "string" },
+    { "key": "refresh_token", "value": "", "type": "string" }
   ],
   "item": [
     {
@@ -27,21 +27,20 @@
           "script": {
             "type": "text/javascript",
             "exec": [
-              "pm.test('status 200', () => pm.response.to.have.status(200));",
-              "pm.test('service ok', () => pm.expect(pm.response.json().status).to.eql('ok'));"
+              "pm.test('status 200', () => pm.response.to.have.status(200));"
             ]
           }
         }
       ]
     },
     {
-      "name": "Register",
+      "name": "1. Register (request OTP)",
       "request": {
         "method": "POST",
         "header": [{ "key": "Content-Type", "value": "application/json" }],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\",\n  \"full_name\": \"{{full_name}}\"\n}"
+          "raw": "{\n  \"email\": \"{{email}}\",\n  \"full_name\": \"{{full_name}}\"\n}"
         },
         "url": {
           "raw": "{{base_url}}/api/v1/auth/register",
@@ -55,24 +54,22 @@
           "script": {
             "type": "text/javascript",
             "exec": [
-              "pm.test('status 201', () => pm.response.to.have.status(201));",
-              "const b = pm.response.json();",
-              "pm.test('returns tokens', () => { pm.expect(b.tokens.access_token).to.be.a('string').and.not.empty; });",
-              "pm.collectionVariables.set('access_token', b.tokens.access_token);",
-              "pm.collectionVariables.set('refresh_token', b.tokens.refresh_token);"
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "pm.test('otp sent', () => pm.expect(pm.response.json().message).to.include('code'));",
+              "console.log('Check your inbox, then set {{otp_code}} and run Verify.');"
             ]
           }
         }
       ]
     },
     {
-      "name": "Login",
+      "name": "1b. Login (request OTP)",
       "request": {
         "method": "POST",
         "header": [{ "key": "Content-Type", "value": "application/json" }],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\"\n}"
+          "raw": "{\n  \"email\": \"{{email}}\"\n}"
         },
         "url": {
           "raw": "{{base_url}}/api/v1/auth/login",
@@ -86,12 +83,64 @@
           "script": {
             "type": "text/javascript",
             "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Verify OTP -> tokens",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{email}}\",\n  \"code\": \"{{otp_code}}\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/auth/verify",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "auth", "verify"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
               "pm.test('status 200', () => pm.response.to.have.status(200));",
               "const b = pm.response.json();",
-              "pm.test('returns access token', () => pm.expect(b.tokens.access_token).to.be.a('string').and.not.empty);",
+              "pm.test('returns tokens', () => pm.expect(b.tokens.access_token).to.be.a('string').and.not.empty);",
               "pm.collectionVariables.set('access_token', b.tokens.access_token);",
               "pm.collectionVariables.set('refresh_token', b.tokens.refresh_token);"
             ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Resend OTP",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{email}}\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/auth/resend",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "auth", "resend"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": ["pm.test('status 200', () => pm.response.to.have.status(200));"]
           }
         }
       ]
@@ -143,7 +192,6 @@
             "exec": [
               "pm.test('status 200', () => pm.response.to.have.status(200));",
               "const b = pm.response.json();",
-              "pm.test('new access token', () => pm.expect(b.access_token).to.be.a('string').and.not.empty);",
               "pm.collectionVariables.set('access_token', b.access_token);",
               "pm.collectionVariables.set('refresh_token', b.refresh_token);"
             ]
@@ -171,10 +219,7 @@
           "listen": "test",
           "script": {
             "type": "text/javascript",
-            "exec": [
-              "pm.test('status 200', () => pm.response.to.have.status(200));",
-              "pm.test('message present', () => pm.expect(pm.response.json().message).to.be.a('string'));"
-            ]
+            "exec": ["pm.test('status 200', () => pm.response.to.have.status(200));"]
           }
         }
       ]

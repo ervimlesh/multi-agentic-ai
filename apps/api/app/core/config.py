@@ -19,16 +19,31 @@ class Settings(BaseSettings):
     DATABASE_URL: str = "sqlite+aiosqlite:///./app.db"
 
     # --- JWT ---
-    JWT_SECRET_KEY: str = "CHANGE-ME-super-secret-key-for-dev-only"
+    JWT_SECRET_KEY: str = "CHANGE-ME-super-secret-key-for-dev-only-32b"
     JWT_ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
 
-    # --- Password hashing ---
-    BCRYPT_ROUNDS: int = 12
+    # --- OTP (passwordless auth) ---
+    OTP_LENGTH: int = 6
+    OTP_EXPIRE_MINUTES: int = 10
+    OTP_MAX_ATTEMPTS: int = 5
+    OTP_RESEND_COOLDOWN_SECONDS: int = 60
+
+    # --- SMTP / email delivery ---
+    SMTP_HOST: str | None = None
+    SMTP_PORT: int = 587
+    SMTP_USER: str | None = None
+    SMTP_PASSWORD: str | None = None
+    SMTP_FROM: str = "Multi-Agent AI <no-reply@example.com>"
+    SMTP_STARTTLS: bool = True
 
     # --- CORS ---
     CORS_ORIGINS: list[str] = ["*"]
+
+    @property
+    def smtp_configured(self) -> bool:
+        return bool(self.SMTP_HOST and self.SMTP_USER and self.SMTP_PASSWORD)
 
 
 @lru_cache

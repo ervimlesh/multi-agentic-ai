@@ -1,5 +1,5 @@
-"""CONTROLLER layer — auth HTTP endpoints."""
-from fastapi import APIRouter, Depends, status
+"""CONTROLLER layer — passwordless OTP auth endpoints."""
+from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.dependencies.auth_dependency import get_current_user
@@ -9,28 +9,41 @@ from app.modules.auth.schemas import (
     AuthResponse,
     LoginRequest,
     MessageResponse,
+    OtpSentResponse,
     RefreshRequest,
     RegisterRequest,
+    ResendRequest,
     TokenResponse,
     UserResponse,
+    VerifyRequest,
 )
 from app.modules.auth.service import AuthService
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 
-@router.post(
-    "/register", response_model=AuthResponse, status_code=status.HTTP_201_CREATED
-)
+@router.post("/register", response_model=OtpSentResponse)
 async def register(data: RegisterRequest, db: AsyncSession = Depends(get_db)):
-    """Create a new account and return the user with a fresh token pair."""
-    return await AuthService(db).register(data)
+    """Step 1 (sign up): create the pending account and email an OTP."""
+    return await AuthService(db).request_register(data)
 
 
-@router.post("/login", response_model=AuthResponse)
+@router.post("/login", response_model=OtpSentResponse)
 async def login(data: LoginRequest, db: AsyncSession = Depends(get_db)):
-    """Authenticate with email + password and return a token pair."""
-    return await AuthService(db).login(data)
+    """Step 1 (sign in): email an OTP to an existing account."""
+    return await AuthService(db).request_login(data)
+
+
+@router.post("/verify", response_model=AuthResponse)
+async def verify(data: VerifyRequest, db: AsyncSession = Depends(get_db)):
+    """Step 2: verify the OTP and return the user + token pair."""
+    return await AuthService(db).verify(data.email, data.code)
+
+
+@router.post("/resend", response_model=OtpSentResponse)
+async def resend(data: ResendRequest, db: AsyncSession = Depends(get_db)):
+    """Re-send a fresh OTP (subject to cooldown)."""
+    return await AuthService(db).resend(data.email)
 
 
 @router.post("/refresh", response_model=TokenResponse)
