@@ -232,6 +232,464 @@ body {
   line-height: 1.5;
 }
 
+/* ─────────────────────────────────────────────
+   Claude Code welcome screen (post-login)
+   Dark theme, mirrors the desktop CC home view.
+   ───────────────────────────────────────────── */
+:root {
+  --cc-bg: #1f1e1d;
+  --cc-surface: #262624;
+  --cc-border: #3a3936;
+  --cc-text: #e8e6e1;
+  --cc-text-muted: #8a8780;
+  --cc-accent: #c96442;
+  --cc-accent-hover: #b3573a;
+}
+
+.cc {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--cc-bg);
+  color: var(--cc-text);
+}
+
+.cc__topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 38px;
+  padding: 0 12px;
+  border-bottom: 1px solid var(--cc-border);
+  flex-shrink: 0;
+}
+
+.cc__tab {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  height: 28px;
+  padding: 0 12px;
+  background: var(--cc-surface);
+  border: 1px solid var(--cc-border);
+  border-radius: 8px;
+  font-size: 12.5px;
+  color: var(--cc-text);
+}
+
+.cc__topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--cc-text-muted);
+}
+
+.cc__icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: var(--cc-text-muted);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.cc__icon-btn:hover {
+  background: var(--cc-surface);
+  color: var(--cc-text);
+}
+
+.cc__main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  overflow: auto;
+}
+
+.cc__brand {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: auto;
+  margin-top: 8px;
+}
+
+.cc__brand-mark {
+  width: 18px;
+  height: 18px;
+  color: var(--cc-accent);
+}
+
+.cc__brand-name {
+  font-family: var(--font-serif);
+  font-size: 19px;
+  font-weight: 500;
+  letter-spacing: -0.2px;
+}
+
+.cc__hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: auto 0;
+}
+
+.cc__mascot {
+  width: 56px;
+  height: 56px;
+  margin-bottom: 22px;
+}
+
+.cc__hint {
+  max-width: 340px;
+  text-align: center;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--cc-text-muted);
+}
+
+.cc__kbd {
+  display: inline-block;
+  padding: 1px 6px;
+  margin: 0 1px;
+  font-family: var(--font-sans);
+  font-size: 11.5px;
+  color: var(--cc-text);
+  background: var(--cc-surface);
+  border: 1px solid var(--cc-border);
+  border-radius: 5px;
+}
+
+/* conversation view (after first message) */
+.cc__messages {
+  width: 100%;
+  max-width: 760px;
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 8px 4px 16px;
+}
+
+.cc__msg {
+  display: flex;
+  gap: 10px;
+  font-size: 14.5px;
+  line-height: 1.6;
+}
+
+.cc__msg--user {
+  justify-content: flex-end;
+}
+
+.cc__msg--user .cc__msg-body {
+  background: var(--cc-surface);
+  border: 1px solid var(--cc-border);
+  border-radius: 12px;
+  padding: 10px 14px;
+  max-width: 80%;
+}
+
+.cc__msg-avatar {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--cc-accent);
+}
+
+.cc__msg-text {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.cc__msg-text--error {
+  color: #e6a08a;
+}
+
+.cc__msg-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--cc-text-muted);
+  font-size: 13.5px;
+}
+
+.cc__spinner {
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--cc-border);
+  border-top-color: var(--cc-accent);
+  border-radius: 50%;
+  animation: cc-spin 0.7s linear infinite;
+}
+
+@keyframes cc-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* attached images (composer + messages) */
+.cc__attachments {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 4px 6px 8px;
+}
+
+.cc__attachment {
+  position: relative;
+}
+
+.cc__attachment img {
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid var(--cc-border);
+}
+
+.cc__attachment-x {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: none;
+  background: #000;
+  color: #fff;
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.cc__msg-images {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.cc__msg-img {
+  max-width: 220px;
+  max-height: 220px;
+  border-radius: 10px;
+  border: 1px solid var(--cc-border);
+}
+
+/* markdown */
+.md {
+  font-size: 14.5px;
+  line-height: 1.65;
+}
+.md-p {
+  margin: 0 0 10px;
+}
+.md .md-p:last-child {
+  margin-bottom: 0;
+}
+.md-h {
+  margin: 14px 0 8px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+.md-ul,
+.md-ol {
+  margin: 4px 0 10px;
+  padding-left: 22px;
+}
+.md-ul li,
+.md-ol li {
+  margin: 2px 0;
+}
+.md-code {
+  background: var(--cc-bg);
+  border: 1px solid var(--cc-border);
+  border-radius: 5px;
+  padding: 1px 5px;
+  font-size: 0.88em;
+  font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+.md-pre {
+  background: var(--cc-bg);
+  border: 1px solid var(--cc-border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  overflow-x: auto;
+  margin: 0 0 10px;
+}
+.md-pre code {
+  font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
+  font-size: 13px;
+}
+.md-link {
+  color: var(--cc-accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* human-in-the-loop approval card */
+.cc__approval {
+  margin-top: 6px;
+  border: 1px solid var(--cc-accent);
+  border-radius: 12px;
+  background: rgba(201, 100, 66, 0.08);
+  padding: 12px 14px;
+  max-width: 520px;
+}
+
+.cc__approval-risk {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--cc-accent);
+  margin-bottom: 6px;
+}
+
+.cc__approval-action {
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.cc__approval-reason {
+  font-size: 12.5px;
+  color: var(--cc-text-muted);
+  margin-bottom: 12px;
+  line-height: 1.5;
+}
+
+.cc__approval-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.cc__btn {
+  height: 34px;
+  padding: 0 16px;
+  font-size: 13.5px;
+  font-weight: 500;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background 0.15s ease, opacity 0.15s ease;
+}
+
+.cc__btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.cc__btn--primary {
+  background: var(--cc-accent);
+  color: #fff;
+}
+
+.cc__btn--primary:hover:not(:disabled) {
+  background: var(--cc-accent-hover);
+}
+
+.cc__btn--ghost {
+  background: transparent;
+  border-color: var(--cc-border);
+  color: var(--cc-text);
+}
+
+.cc__btn--ghost:hover:not(:disabled) {
+  background: var(--cc-surface);
+}
+
+.cc__decided {
+  margin-top: 6px;
+  font-size: 12.5px;
+  color: var(--cc-text-muted);
+}
+
+.cc__composer {
+  width: 100%;
+  max-width: 760px;
+  margin-top: auto;
+  margin-bottom: 8px;
+  border: 1.5px solid var(--cc-accent);
+  border-radius: 14px;
+  background: var(--cc-surface);
+  padding: 6px 8px 8px;
+}
+
+.cc__input-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cc__input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--cc-text);
+  font-size: 14px;
+  font-family: var(--font-sans);
+  padding: 10px 6px;
+}
+
+.cc__input::placeholder {
+  color: var(--cc-text-muted);
+}
+
+.cc__toolbar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.cc__toolbar-spacer {
+  flex: 1;
+}
+
+.cc__mode {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  color: var(--cc-text-muted);
+  padding: 0 6px;
+}
+
+.cc__send {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  background: var(--cc-accent);
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.15s ease, opacity 0.15s ease;
+}
+
+.cc__send:hover:not(:disabled) {
+  background: var(--cc-accent-hover);
+}
+
+.cc__send:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 /* Dashboard (post-login) */
 .dash {
   max-width: 560px;

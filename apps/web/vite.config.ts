@@ -15,6 +15,8 @@ export default defineConfig({
       // Forward API calls to the FastAPI backend during development.
       "/api": { target: "http://localhost:8000", changeOrigin: true },
       "/health": { target: "http://localhost:8000", changeOrigin: true },
+      // Forward agent runs to the agent-engine (LangGraph + Groq) service.
+      "/agent": { target: "http://localhost:8100", changeOrigin: true },
     },
   },
 });
